@@ -24,6 +24,10 @@ android {
             buildConfigField "String", "BASE_URL", '"https://api.github.com/"'
         }
     }
+    dataBinding {
+        enabled =true
+    }
+
 }
 
 dependencies {
