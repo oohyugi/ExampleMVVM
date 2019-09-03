@@ -9,10 +9,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.yogi.examplemvvm.R
 import com.yogi.examplemvvm.SharedViewModel
-import com.yogi.examplemvvm.utils.toast
+import com.yogi.examplemvvm.utils.*
 import kotlinx.android.synthetic.main.home_fragment.*
 
 
@@ -48,11 +49,14 @@ class HomeFragment : Fragment() {
             context?.toast(mPage.toString())
             viewModel.loadMoreData()
         }
+
+        context?.toast("connectivity ${context?.isConnectedWifi()}")
+        val aa ="sfsf"
     }
 
     private fun initObserver() {
         viewModel.mListUser.observe(this, Observer {
-            Log.wtf(TAG, "success ${Gson().toJson(it)}")
+//            Log.wtf(TAG, "success ${Gson().toJson(it)}")
 
             it?.let {
                 mAdapter.addHeaderAndSubmitList(it)
@@ -87,9 +91,18 @@ class HomeFragment : Fragment() {
             context?.toast(it.login)
             viewModel.onUserItemClicked(it)
         })
+        val mLayoutManager = LinearLayoutManager(context)
+        val scrollListener = object :EndlessRecyclerViewScrollListener(mLayoutManager){
+            override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView) {
+                viewModel.loadMoreData()
+            }
+
+        }
         rv_user?.apply {
-            layoutManager = LinearLayoutManager(context)
+            layoutManager = mLayoutManager
             adapter = mAdapter
+            addOnScrollListener(scrollListener)
+
         }
 
     }

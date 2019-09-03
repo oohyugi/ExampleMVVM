@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.yogi.examplemvvm.base.BaseViewModel
-import com.yogi.examplemvvm.data.Repository
-import com.yogi.examplemvvm.data.remote.MyResult
+import com.yogi.examplemvvm.data.HomeRepository
+import com.yogi.examplemvvm.data.remote.ResultState
 import com.yogi.examplemvvm.model.GithubUserMdl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 
 class HomeViewModel : BaseViewModel() {
 
-    private val mRepo = Repository.RepositoryImpl()
+    private val mRepo = HomeRepository.HomeRepositoryImpl()
     private var _users = MutableLiveData<List<GithubUserMdl>>()
     var mUsername = "doraemon"
     var mPage: Int = 1
@@ -41,18 +41,16 @@ class HomeViewModel : BaseViewModel() {
         viewModelScope.launch {
             val request = mRepo.fetchListUser(username, page)
 
-
             loading.postValue(false)
             withContext(Dispatchers.Main) {
                 when (request) {
-                    is MyResult.Success -> {
-                        mlist.addAll(request.data)
+                    is ResultState.Success -> {
+                        request.data?.let { mlist.addAll(it) }
                         _users.value = mlist
 
-
                     }
-                    is MyResult.Error -> {
-                        errorFetchingData.postValue(request.message)
+                    is ResultState.Error -> {
+                        errorFetchingData.postValue(request.errorMessage)
 
                     }
                 }
