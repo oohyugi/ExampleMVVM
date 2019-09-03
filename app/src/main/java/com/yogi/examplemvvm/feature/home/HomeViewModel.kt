@@ -20,6 +20,13 @@ class HomeViewModel : BaseViewModel() {
     var mListUser: LiveData<List<GithubUserMdl>> = _users
     private var mlist: MutableList<GithubUserMdl> = mutableListOf()
 
+    //navigation
+    private val _navigateToDetail = MutableLiveData<GithubUserMdl>()
+    val navigateToDetail
+        get()
+        = _navigateToDetail
+
+
     init {
 
 
@@ -56,11 +63,21 @@ class HomeViewModel : BaseViewModel() {
     }
 
 
-    fun fecthData(i: Int) {
+    fun loadMoreData() {
 
-        loadUsers(true, mUsername, i)
+        mPage++
+        loadUsers(true, mUsername, mPage)
 
 
+    }
+
+
+    fun onUserItemClicked(it: GithubUserMdl) {
+        _navigateToDetail.value = it
+    }
+
+    fun onDetailNavigated() {
+        _navigateToDetail.value = null
     }
 
 

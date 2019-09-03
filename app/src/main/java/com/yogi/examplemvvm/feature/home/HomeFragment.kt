@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
 import com.yogi.examplemvvm.R
 import com.yogi.examplemvvm.SharedViewModel
+import com.yogi.examplemvvm.utils.toast
 import kotlinx.android.synthetic.main.home_fragment.*
 
 
@@ -23,11 +24,10 @@ class HomeFragment : Fragment() {
 
     private val TAG = HomeFragment::class.java.name
 
+    private var mPage =0
     private lateinit var viewModel: HomeViewModel
     private lateinit var viewModelShared: SharedViewModel
     lateinit var mAdapter: UserListAdapter
-    private var mPage = 1
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -39,13 +39,14 @@ class HomeFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(activity!!).get(HomeViewModel::class.java)
         viewModelShared = ViewModelProviders.of(activity!!).get(SharedViewModel::class.java)
-        initUSer()
+        initUser()
         initObserver()
 
 
         btn_change_username.setOnClickListener {
             mPage++
-            viewModel.fecthData(mPage)
+            context?.toast(mPage.toString())
+            viewModel.loadMoreData()
         }
     }
 
@@ -54,7 +55,7 @@ class HomeFragment : Fragment() {
             Log.wtf(TAG, "success ${Gson().toJson(it)}")
 
             it?.let {
-                mAdapter.submitList(it)
+                mAdapter.addHeaderAndSubmitList(it)
             }
 
 
@@ -65,16 +66,32 @@ class HomeFragment : Fragment() {
         })
 
 
+        viewModel.errorFetchingData.observe(this, Observer {
+            context?.toast(it)
+        })
+        viewModel.navigateToDetail.observe(this, Observer {
+            it?.let {
+                //todo intent to detail
+
+                context?.toast("todo goto detail")
+
+                viewModel.onDetailNavigated()
+            }
+        })
+
+
     }
 
-    private fun initUSer() {
-        mAdapter = UserListAdapter()
+    private fun initUser() {
+        mAdapter = UserListAdapter(UserListAdapter.UserListAdapterListener {
+            context?.toast(it.login)
+            viewModel.onUserItemClicked(it)
+        })
         rv_user?.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = mAdapter
         }
 
     }
-
 
 }
